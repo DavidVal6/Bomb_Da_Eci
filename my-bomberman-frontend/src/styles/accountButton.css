@@ -1,0 +1,54 @@
+.aButton{
+    background: url('../assets/images/accountIcon.png') no-repeat;
+    background-size: cover;
+    padding: 2rem 2rem;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.menuButton{
+    margin: -6px;
+    margin-bottom: -7px;
+    padding: 5px;
+    border: none;
+    cursor: pointer;
+    width: 6rem;
+    color: rgb(0, 0, 0);
+    background-color: white;
+    font-family: 'Common Pixel';
+    font-size: 1rem;
+    transition: box-shadow 0.1s ease-in-out; /* Transición suave del sombreado */
+}
+
+.menuButton:hover {
+    background-color: rgba(133, 133, 133, 0.8);
+}
+
+.accountButton{
+    float: right;
+    margin-top: 0.5rem;
+    margin-right: 3rem;
+}
+
+.menu {
+    position: absolute;
+    background-color: #fff;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 5px;
+    margin-left: -1.4rem;
+    width: 7rem;
+}
+  
+.menu li {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.menu a:hover {
+    background-color: #f0f0f0;
+}

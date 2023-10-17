@@ -1,0 +1,14 @@
+.CharacterSprite {
+    width: 96px; /* Ancho del sprite */
+    height: 96px; /* Alto del sprite */
+    background-image: url('../assets/models/charSprite.png');
+    background-size: 1150px 770px;
+}
+
+.characterContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    position: absolute;
+}
