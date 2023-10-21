@@ -1,7 +1,16 @@
-.GameBoard {
+.game-board {
+    
+}
+
+.players-and-exit{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.board-down-pannel{
+    margin-top: 1rem;
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
-    align-items: center;
-    margin: 0;
 }

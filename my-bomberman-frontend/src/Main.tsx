@@ -1,13 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App.js";
-import "./index.css";
+import "./styles/Main.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Login from "./routes/Login.tsx";
-import Singup from "./routes/Singup.tsx";
-import Dashboard from "./routes/Dashboard.tsx";
-import Protectedroute from "./routes/Protectedroutes.tsx";
-import { AuthProvider } from "./auth/AuthProvider.tsx";
+import Login from "./components/routes/Login.tsx";
+import Singup from "./components/routes/Singup.tsx";
+import Dashboard from "./components/routes/Dashboard.tsx";
+import Protectedroute from "./components/routes/Protectedroutes.tsx";
+import { AuthProvider } from "./components/auth/AuthProvider.tsx";
 
 const Main = () => {
   const rootElement = document.getElementById("root");

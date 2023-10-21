@@ -6,7 +6,7 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons';
 function PlayButton(){
     const handleRedirect = () => {
         // Redirige a la URL especificada cuando se presiona el botón
-        window.location.href = './gameBoard';
+        window.location.href = './game-board';
     };
     return(
         <div className="playButtonPanel">

@@ -1,16 +1,24 @@
 import './styles/GameBoard.css';
-import Sprite from './components/board/Sprite';
+import Map from './components/board/Map';
+import Player from './components/board/Player';
+import NavigationBar from './components/menu/navigationBar';
+import ExitButton from './components/board/ExitButton';
 
 function GameBoard(){
-  let xSprite = [0, 288, 288, 864];
-  let ySprite = [0, 0, 384, 0];
+  
   return(
-    <div className="GameBoard">
-      {/* <Sprite spriteX={0} spriteY={0}/>
-      <Sprite spriteX={288} spriteY={0}/>
-      <Sprite spriteX={288} spriteY={384}/>
-      <Sprite spriteX={864} spriteY={0}/> */}
-      <Sprite spriteX={xSprite[0]} spriteY={ySprite[0]}/>
+    <div className="game-board">
+      <NavigationBar />
+      <div className="board-down-pannel">
+        <Map />
+        <div className="players-and-exit">
+          <Player identifier={1} />
+          <Player identifier={2} />
+          <Player identifier={3} />
+          <Player identifier={4} />
+          <ExitButton />
+        </div>
+      </div>
     </div>
   );
 }

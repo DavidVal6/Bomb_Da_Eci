@@ -1,6 +1,6 @@
 .aButton{
     background: url('../assets/images/accountIcon.png') no-repeat;
-    background-size: cover;
+    background-size: 70px 70px;
     padding: 2rem 2rem;
     border: none;
     cursor: pointer;
