@@ -1,8 +1,8 @@
 import '../../styles/Cell.css';
 
-function Cell({ identifier, content }){
+function Cell({ row, column, content}){
     return(
-    <div id={identifier} className="cell">{content}</div>
+    <div id={row + "-" + column} className="cell">{content}</div>
     );
 }
 
