@@ -5,7 +5,6 @@ import Sprite from './Sprite';
 import Bushes from "../../assets/images/Arbusto.png";
 import Tombstones from "../../assets/images/Lapida.png";
 import Street from "../../assets/images/Carretera.png";
-import Ducks from "../../assets/images/Patos.png";
 
 
 var poblated = false;
@@ -13,6 +12,8 @@ let isAnimating = true;
 let currentCells = [];
 let positionX = 1;
 let positionY = 1;
+let prevAnimationX = 1;
+let prevAnimationY = 1;
 let xSprite = [0, 165, 165, 495];
 let ySprite = [0, 0, 220, 0];
 let rowDucks = [4, 5, 6];
@@ -22,7 +23,6 @@ function Map() {
   const [cells, setCellsContent] = useState([]);
   const [player, setPlayer] = useState(<Sprite spriteX={xSprite[0]} spriteY={ySprite[0]} />);
   const [count, setCount] = useState(-1);
-  
   useEffect(() => {
     let animationX = 0;
     let animationY = 0;
@@ -35,7 +35,7 @@ function Map() {
         for (let j = 0; j < 11; j++) {
           content = 
           i === 1 && j === 1 ? player :
-          rowDucks.includes(j) && columnDucks.includes(i) ? <img src={Ducks} className="mapImages" alt="ducks"/> :
+          rowDucks.includes(j) && columnDucks.includes(i) ? <div className={`duck-${j}-${i}`}/> :
           j === 10 ? <img src={Street} className="mapImages" alt="street"/> :
           i === 14 ? <img src={Tombstones} className="mapImages" alt="tombstones"/> :
           i === 0 || j === 0 ? <img src={Bushes} className="mapImages" alt="bushes"/> :
@@ -72,18 +72,26 @@ function Map() {
 
         // Esto se hace para redibujar el sprite en cada celda a la que se mueve
         currentCells[positionX][positionY] = <Cell row={positionX} column={positionY} />;
+        prevAnimationY = positionY;
         positionY =
           e.key === 'ArrowDown'
           ? (positionY < 9 ? positionY + 1 : positionY)
           : e.key === 'ArrowUp'
           ? (positionY > 1 ? positionY - 1 : positionY)
           : positionY;
+        prevAnimationX = positionX;
         positionX =
           e.key === 'ArrowRight'
           ? (positionX < 13  ? positionX + 1 : positionX)
           : e.key === 'ArrowLeft'
           ? (positionX > 1  ? positionX - 1 : positionX)
           : positionX;
+
+        // Esta condición previene que el jugador atraviese el estanque de patos
+        if (rowDucks.includes(positionY) && columnDucks.includes(positionX)){
+          positionX = prevAnimationX;
+          positionY = prevAnimationY;
+        }
           currentCells[positionX][positionY] = <Cell row={positionX} column={positionY} content={player} />;
         setCellsContent([...currentCells]); // Actualiza el estado de las celdas
       }

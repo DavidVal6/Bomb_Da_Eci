@@ -6,7 +6,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons';
 function ExitButton(){
     const handleRedirect = () => {
         // Redirige a la URL especificada cuando se presiona el botón
-        window.location.href = './';
+        window.location.href = './game-menu';
     };
     return(
         <div className="exit-button-panel">
