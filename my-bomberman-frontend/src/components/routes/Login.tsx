@@ -20,6 +20,8 @@ export default function Login() {
   const auth = useAuth();
 
   const login = async () => {
+    window.location.href = window.location.origin + '/game-menu';
+
     try {
       const loginResponse = await pca.loginPopup();
       if (loginResponse) {

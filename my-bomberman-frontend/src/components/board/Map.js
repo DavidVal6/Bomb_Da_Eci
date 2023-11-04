@@ -6,7 +6,6 @@ import Bushes from "../../assets/images/Arbusto.png";
 import Tombstones from "../../assets/images/Lapida.png";
 import Street from "../../assets/images/Carretera.png";
 
-
 var poblated = false;
 let isAnimating = true;
 let currentCells = [];
@@ -18,10 +17,10 @@ let xSprite = [0, 165, 165, 495];
 let ySprite = [0, 0, 220, 0];
 let rowDucks = [4, 5, 6];
 let columnDucks = [6, 7, 8];
+var player = <Sprite spriteX={xSprite[1]} spriteY={ySprite[1]} />;
 
 function Map() {
   const [cells, setCellsContent] = useState([]);
-  const [player, setPlayer] = useState(<Sprite spriteX={xSprite[0]} spriteY={ySprite[0]} />);
   const [count, setCount] = useState(-1);
   useEffect(() => {
     let animationX = 0;
@@ -53,20 +52,6 @@ function Map() {
       // Con este if el jugador debe presionar de forma pausada las teclas para moverse
       if (isAnimating) {
         isAnimating = false;
-        // Animacion del sprite
-        animationY =
-          e.key === 'ArrowDown'
-            ? ySprite[0]
-            : e.key === 'ArrowLeft'
-            ? 55 + ySprite[0]
-            : e.key === 'ArrowRight'
-            ? 110 + ySprite[0]
-            : 165 + ySprite[0];
-        animationX = 110 + 55 * count + xSprite[0];
-        setPlayer((prevPlayer) => (
-          <Sprite spriteX={animationX} spriteY={animationY} />
-        ));
-
         // Esto se asegura que el ciclo del sprite sea correcto
         setCount((prevCount) => (prevCount < 0 ? prevCount + 1 : -2));
 
@@ -86,6 +71,18 @@ function Map() {
           : e.key === 'ArrowLeft'
           ? (positionX > 1  ? positionX - 1 : positionX)
           : positionX;
+        
+        // Animacion del sprite
+        animationY =
+          e.key === 'ArrowDown'
+            ? ySprite[1]
+            : e.key === 'ArrowLeft'
+            ? 55 + ySprite[1]
+            : e.key === 'ArrowRight'
+            ? 110 + ySprite[1]
+            : 165 + ySprite[1];
+        animationX = 110 + 55 * count + xSprite[1];
+        player = <Sprite spriteX={animationX} spriteY={animationY} />;
 
         // Esta condición previene que el jugador atraviese el estanque de patos
         if (rowDucks.includes(positionY) && columnDucks.includes(positionX)){
@@ -107,7 +104,7 @@ function Map() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [player, count]);
+  }, [count]);
 
   return (
     <div className="map">
