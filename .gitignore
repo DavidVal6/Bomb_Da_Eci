@@ -57,7 +57,8 @@ target
 secrets.yml
 .gradletasknamecache
 .sts4-cache
-
+.vscode
+.metadata
 #front
 # dependencies
 my-bomberman-frontend/node_modules

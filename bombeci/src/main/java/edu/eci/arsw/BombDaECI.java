@@ -1,10 +1,6 @@
 package edu.eci.arsw;
 
-/**
- * Hello world!
- *
- */
-public class App 
+public class BombDaECI 
 {
     public static void main( String[] args )
     {
