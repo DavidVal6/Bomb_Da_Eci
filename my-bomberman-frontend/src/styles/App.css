@@ -1,0 +1,19 @@
+.App {
+  text-align: center;
+  margin: 0;
+}
+
+.rightPanel{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  float: right;
+  max-width: 40%;
+}
+
+.bottomPanel{
+  height: 40rem;
+  display: flex;
+  flex-direction: row;
+  justify-content:space-between;
+}

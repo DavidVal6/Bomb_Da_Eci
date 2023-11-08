@@ -59,3 +59,25 @@ secrets.yml
 .sts4-cache
 .vscode
 .metadata
+#front
+# dependencies
+my-bomberman-frontend/node_modules
+my-bomberman-frontend/pnp
+my-bomberman-frontend/pnp.js
+
+# testing
+my-bomberman-frontend/coverage
+
+# production
+my-bomberman-frontend/build
+
+# misc
+my-bomberman-frontend/DS_Store
+my-bomberman-frontend/env.local
+my-bomberman-frontend/env.development.local
+my-bomberman-frontend/env.test.local
+my-bomberman-frontend/env.production.local
+
+my-bomberman-frontend/npm-debug.log*
+my-bomberman-frontend/yarn-debug.log*
+my-bomberman-frontend/yarn-error.log*
