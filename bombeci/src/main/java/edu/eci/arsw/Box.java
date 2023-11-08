@@ -4,10 +4,17 @@ public class Box {
 
     protected int x;
     protected int y;
+    protected boolean hasPowerUp;
+    protected PowerUp ownPowerUp;
 
-    public Box (int x, int y) {
+    public Box(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setPowerBoost(PowerUp pu) {
+        hasPowerUp = true;
+        ownPowerUp = pu;
     }
 
     public int getX() {
