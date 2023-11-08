@@ -58,7 +58,7 @@ public class Player extends Box{
     }
 
     public void incraseExplosionRadius(int explosionRadius) {
-        explosionRadius = (explosionRadius<5)?explosionRadius++:explosionRadius;
+        explosionRadius = (explosionRadius<4)?explosionRadius++:explosionRadius;
     }
 
     public void gainShields(int shields) {
