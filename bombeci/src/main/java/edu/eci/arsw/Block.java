@@ -12,4 +12,9 @@ public class Block extends Box{
     public boolean isDestroyable() {
         return destroyable;
     }
+
+    @Override
+    public Boolean isEmpty(){
+        return false;
+    }
 }

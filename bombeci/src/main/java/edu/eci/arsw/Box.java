@@ -1,6 +1,6 @@
 package edu.eci.arsw;
 
-public abstract class Box {
+public class Box {
 
     protected int x;
     protected int y;
@@ -24,5 +24,9 @@ public abstract class Box {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public Boolean isEmpty() {
+        return true;
     }
 }

@@ -15,10 +15,10 @@ public class PowerUp extends Box{
                 player.gainShields();
                 break;
             case BOMB_UP:
-                player.incraseBombs();
+                player.increaseBombs();
                 break;
             case RANGE_UP:
-                player.incraseExplosionRadius();
+                player.increaseExplosionRadius();
                 break;
         }
     }

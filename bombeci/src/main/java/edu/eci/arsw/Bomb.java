@@ -8,6 +8,10 @@ public class Bomb extends Box{
         super(x, y);
         timer = 3000;
     }
-    
+
+    @Override
+    public Boolean isEmpty(){
+        return false;
+    }
     
 }

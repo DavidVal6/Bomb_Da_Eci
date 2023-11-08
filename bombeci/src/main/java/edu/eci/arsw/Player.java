@@ -1,18 +1,24 @@
 package edu.eci.arsw;
 
-public class Player extends Box{
+public class Player{
+
+    private int xPosition;
+    private int yPosition;
 
     private String name;
     private boolean isAlive;
     private boolean isImmortal;
+    
+
     private int kills;
     private int bombs;
     private int explosionRadius;
     private int shields;
     private Board board;
 
-    public Player(int x, int y, String name, boolean isImmortal) {
-        super(x, y);
+    public Player(int xPosition, int yPosition, String name, boolean isImmortal) {
+        setXPosition(xPosition);
+        setYPosition(yPosition);
         setName(name);;
         setImmortal(isImmortal);
         setAlive(true);
@@ -21,6 +27,21 @@ public class Player extends Box{
         bombs = 1;
         explosionRadius = 1;
         shields = 0;
+    }
+
+    public int getXPosition() {
+        return xPosition;
+    }
+    public void setXPosition(int xPosition) {
+        this.xPosition = xPosition;
+    }
+
+    public int getYPosition() {
+        return yPosition;
+    }
+
+    public void setYPosition(int yPosition) {
+        this.yPosition = yPosition;
     }
 
     public String getName() {
@@ -44,6 +65,7 @@ public class Player extends Box{
     }
 
     public void setBoard(Board board) {
+        this.board = board;
     }
 
     public Boolean isImmortal() {
@@ -58,7 +80,7 @@ public class Player extends Box{
         return kills;
     }
 
-    public void Kill() {
+    public void increaseKills() {
         kills++;
     }
 
@@ -70,7 +92,7 @@ public class Player extends Box{
         return shields;
     }
 
-    public void incraseBombs() {
+    public void increaseBombs() {
         bombs = (bombs<3)?bombs+1:bombs;
     }
 
@@ -78,7 +100,7 @@ public class Player extends Box{
         return explosionRadius;
     }
 
-    public void incraseExplosionRadius() {
+    public void increaseExplosionRadius() {
         explosionRadius = (explosionRadius<5)?explosionRadius+1:explosionRadius;
     }
 
@@ -98,18 +120,28 @@ public class Player extends Box{
     }
 
     public void moveRight() {
-        y++;
-    }
-
-    public void moveUp() {
-        x--;
-    }
-
-    public void moveDown() {
-        x++;
+        if (board.getBox(getXPosition(), getYPosition()+1).isEmpty()){
+            yPosition++;
+        }
     }
 
     public void moveLeft() {
-        y--;
+        if (board.getBox(getXPosition(), getYPosition()-1).isEmpty()){
+            yPosition--;
+        }
     }
+
+    public void moveUp() {
+        if (board.getBox(getXPosition()-1, getYPosition()).isEmpty()){
+            xPosition--;
+        }
+    }
+
+    public void moveDown() {
+        if (board.getBox(getXPosition()+1, getYPosition()).isEmpty()){
+            xPosition++;
+        }
+    }
+
+    
 }

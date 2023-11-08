@@ -17,7 +17,7 @@ public class Board {
         int[][] tempBoard = {
             {1,1,1,1,1,1,1,1,1,1,1,1},
             {1,0,0,2,0,2,0,2,2,0,0,1},
-            {1,0,1,0,0,2,2,0,0,0,0,1},
+            {1,0,1,0,0,2,2,0,0,1,0,1},
             {1,2,0,2,2,1,1,2,2,0,2,1},
             {1,2,0,1,0,2,2,0,1,0,0,1},
             {1,0,2,0,2,1,1,2,0,2,2,1},
@@ -32,7 +32,9 @@ public class Board {
 
         for (int i = 0; i < size; i++){
             for (int j = 0; j < size; j++){
-                if (tempBoard[i][j] == 1){
+                if (tempBoard[i][j] == 0){
+                    board[i][j] = new Box(i, j);
+                } else if (tempBoard[i][j] == 1){
                     board[i][j] = new Block(i, j, false);
                 } else if (tempBoard[i][j] == 2) {
                     board[i][j] = new Block(i, j, true);
@@ -42,5 +44,9 @@ public class Board {
     }
 
     private void generateBoosts() {
+    }
+
+    public Box getBox(int xPosition, int yPosition){
+        return board[xPosition][yPosition];
     }
 }
