@@ -49,20 +49,24 @@ public class Player extends Box{
         return bombs;
     }
 
+    public int getShields() {
+        return shields;
+    }
+
     public void incraseBombs() {
-        bombs = (bombs<3)?bombs++:bombs;
+        bombs = (bombs<3)?bombs+1:bombs;
     }
 
     public int getExplosionRadius() {
         return explosionRadius;
     }
 
-    public void incraseExplosionRadius(int explosionRadius) {
-        explosionRadius = (explosionRadius<5)?explosionRadius++:explosionRadius;
+    public void incraseExplosionRadius() {
+        explosionRadius = (explosionRadius<5)?explosionRadius+1:explosionRadius;
     }
 
-    public void gainShields(int shields) {
-        shields = (shields<1)?shields++:shields;
+    public void gainShields() {
+        shields = (shields<1)?shields+1:shields;
     }
 
     public void dead() {
