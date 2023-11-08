@@ -4,17 +4,19 @@ public class Player extends Box{
 
     private String name;
     private boolean isAlive;
-    private boolean isInmortal;
+    private boolean isImmortal;
     private int kills;
     private int bombs;
     private int explosionRadius;
     private int shields;
+    private Board board;
 
-    public Player(int x, int y, String name, boolean isInmortal) {
+    public Player(int x, int y, String name, boolean isImmortal) {
         super(x, y);
-        this.name = name;
-        isAlive = true;
-        this.isInmortal = isInmortal;
+        setName(name);;
+        setImmortal(isImmortal);
+        setAlive(true);
+
         kills = 0;
         bombs = 1;
         explosionRadius = 1;
@@ -35,6 +37,21 @@ public class Player extends Box{
 
     private void setAlive(boolean isAlive) {
         this.isAlive = isAlive;
+    }
+    
+    public Board getBoard() {
+        return board;
+    }
+
+    public void setBoard(Board board) {
+    }
+
+    public Boolean isImmortal() {
+        return isImmortal;
+    }
+
+    public void setImmortal(Boolean isImmortal) {
+        this.isImmortal = isImmortal;
     }
 
     public int getKills() {
@@ -70,7 +87,7 @@ public class Player extends Box{
     }
 
     public void dead() {
-        if(!isInmortal){
+        if(!isImmortal){
             if(shields>0){
                 shields--;
             }

@@ -1,6 +1,5 @@
 package edu.eci.arsw;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Board {
