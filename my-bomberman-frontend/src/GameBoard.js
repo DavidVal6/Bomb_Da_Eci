@@ -1,8 +1,8 @@
 import './styles/GameBoard.css';
-import Map from './components/board/Map';
 import Player from './components/board/Player';
 import NavigationBar from './components/menu/navigationBar';
 import ExitButton from './components/board/ExitButton';
+import Game from './components/board/Game';
 
 function GameBoard(){
   
@@ -10,7 +10,7 @@ function GameBoard(){
     <div className="game-board">
       <NavigationBar />
       <div className="board-down-pannel">
-        <Map />
+        <Game />
         <div className="players-and-exit">
           <Player identifier={1} />
           <Player identifier={2} />

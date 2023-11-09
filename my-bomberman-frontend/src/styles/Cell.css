@@ -1,5 +1,6 @@
 .cell{
-    background-color: white;
-    width: 55px;
-    height: 55px;
+    background-color: rgb(222, 235, 215);
+    width: 45px;
+    height: 45px;
+    border: 1px solid gray;
 }

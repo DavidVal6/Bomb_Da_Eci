@@ -1,0 +1,14 @@
+.bomb-container {
+    width: 45px; /* Ancho del sprite */
+    height: 45px; /* Alto del sprite */
+    background-image: url('../assets/models/bomb-sprite.png');
+    background-size: 500px 270px;
+}
+
+.bomb{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    position: absolute;
+}
