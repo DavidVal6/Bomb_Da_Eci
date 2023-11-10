@@ -100,7 +100,7 @@ function Game() {
 
       let row = 0;
       let column = 0;
-
+      // Con esto se incluyen las imagenes de los edificios
       Object.keys(buildings).forEach(function(key) {
         row = buildings[key][0];
         column = buildings[key][1];
