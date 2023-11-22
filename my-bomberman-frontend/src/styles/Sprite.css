@@ -1,8 +1,8 @@
 .CharacterSprite {
-    width: 55px; /* Ancho del sprite */
-    height: 55px; /* Alto del sprite */
+    width: 45px; /* Ancho del sprite */
+    height: 45px; /* Alto del sprite */
     background-image: url('../assets/models/charSprite.png');
-    background-size: 650px 440px;
+    background-size: 540px 360px;
 }
 
 .characterContainer{
