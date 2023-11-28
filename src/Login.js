@@ -1,6 +1,7 @@
 import { loginRequest } from "./authConfig.js";
 import { useMsal } from '@azure/msal-react';
 
+
 function Login () {
     const { instance } = useMsal();
 
@@ -10,6 +11,8 @@ function Login () {
             redirectUri: '/game-menu',
         }).catch((error) => console.log(error));
     };
+
+    console.log();
 
     // const handleLogoutRedirect = () => {
     //     instance.logoutRedirect().catch((error) => console.log(error));
@@ -23,7 +26,7 @@ function Login () {
     return (
         <form className="form">
             <h1>Join Us and Bomb Da Eci!!</h1>
-            <button onClick={() => handleLoginRedirect()}>Login/Sign Up</button>
+            <button onClick={handleLoginRedirect()}>Login/Sign Up</button>
         </form>
     );
 }

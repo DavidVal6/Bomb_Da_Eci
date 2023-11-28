@@ -18,14 +18,12 @@ import D from "../../assets/images/D.png";
 import F from "../../assets/images/F.png";
 import G from "../../assets/images/G.png";
 import H from "../../assets/images/H.png";
+import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
 
 var poblated = false;
 let isAnimating = true;
 let currentCells = [];
-let positionX = 1;
-let positionY = 1;
-let prevAnimationX = 1;
-let prevAnimationY = 1;
 let xSprite = [0, 135, 135, 405];
 let ySprite = [0, 0, 180, 0];
 const Ducks = [5, 6];
@@ -33,19 +31,10 @@ var player = <Sprite spriteX={xSprite[0]} spriteY={ySprite[0]} />;
 var flagBomb = false;
 var bombPosX = 0;
 var bombPosY = 0;
+var positionX = 1;
+var positionY = 1;
 const validKeys = ['a', 'w', 's', 'd', ' '];
-const entitys = [[1,1,1,1,1,1,1,1,1,1,1,1],
-                 [1,0,0,2,0,2,0,2,2,0,0,1],
-                 [1,0,1,0,0,2,2,0,0,1,0,1],
-                 [1,2,0,2,2,1,1,2,2,0,2,1],
-                 [1,2,0,1,0,2,2,0,1,0,0,1],
-                 [1,0,2,0,2,1,1,2,0,2,2,1],
-                 [1,2,2,0,2,1,1,2,0,2,0,1],
-                 [1,0,0,1,0,2,2,0,1,0,2,1],
-                 [1,2,0,2,2,1,1,2,2,0,2,1],
-                 [1,0,1,0,0,2,2,0,0,1,0,1],
-                 [1,0,0,2,2,0,2,0,2,0,0,1],
-                 [1,1,1,1,1,1,1,1,1,1,1,1]];
+
 var buildings = {"H":[2,2],
                 "Harveys":[2,9],
                 "G":[9,9],
@@ -72,47 +61,84 @@ var buildingsName = {"H":H,
                 "A":A,
                 "C":C};
 
+var entities = [];
+
+const socket = new SockJS('http://localhost:8080/stompendpoint');
+const client = Stomp.over(socket);
+
+class Movement {
+  constructor(player, key) {
+      this.player = player;
+      this.key = key;
+  }
+}
+
 function Game() {
-  const [cells, setCellsContent] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [count, setCount] = useState(-1);
+  const [cells, setCellsContent] = useState([]);
+
   useEffect(() => {
+    
+    client.connect({}, () => {
+      // Obtiene la instancia de los jugadores
+      client.subscribe('/user/queue/get-board-instance', (response) => {
+        const board = JSON.parse(response.body);
+        entities = board;
+        renderTable();
+      });
+      // Activa un trigger en el back para que este retorne la instancia de los jugadores
+      client.send('/app/get-board-instance', {}, 'Loud And Clear');
+
+      client.subscribe('/user/queue/get-player-instance', (response) => {
+        //console.log("Entre");
+        const players = JSON.parse(response.body);
+        setPlayers(players);
+      });
+      // Activa un trigger en el back para que este retorne la instancia de los jugadores
+      client.send('/app/get-player-instance', {}, 'Loud And Clear');
+    });
+
     let animationX = 0;
     let animationY = 0;
-    // Si el tablero ya esta poblado, no se vuelven a generar las celdas si no que se trabaja sobre las ya existentes
-    if (!poblated){
-      // Mapeo y asignacion de celdas
-      let content = null;
-      for (let i = 0; i < 12; i++) {
-        currentCells[i] = [];
-        for (let j = 0; j < 12; j++) {
-          content = 
-          i === 1 && j === 1 ? player :
-          entitys[i][j] === 2 ? <img src={Box} className="mapImages" alt="box"/> :
-          Ducks.includes(j) && Ducks.includes(i) ? <div className={`duck-${j}-${i}`}/> :
-          i === 11 ? <img src={Street} className="mapImages" alt="street"/> :
-          j === 11 ? <img src={Tombstones} className="mapImages" alt="tombstones"/> :
-          j === 0 || i === 0 ? <img src={Bushes} className="mapImages" alt="bushes"/> :
-          null;
-          
-          currentCells[i][j] = <Cell row={i} column={j} content={content} />;
+
+    const renderTable = () => {
+      // Si el tablero ya esta poblado, no se vuelven a generar las celdas si no que se trabaja sobre las ya existentes
+      if (!poblated){
+        // Mapeo y asignacion de celdas
+        let content = null;
+        for (let i = 0; i < 12; i++) {
+          currentCells[i] = [];
+          for (let j = 0; j < 12; j++) {
+            content = 
+            i === 1 && j === 1 ? player :
+            entities[i][j] === '2' ? <img src={Box} className="mapImages" alt="box"/> :
+            Ducks.includes(j) && Ducks.includes(i) ? <div className={`duck-${j}-${i}`}/> :
+            i === 11 ? <img src={Street} className="mapImages" alt="street"/> :
+            j === 11 ? <img src={Tombstones} className="mapImages" alt="tombstones"/> :
+            j === 0 || i === 0 ? <img src={Bushes} className="mapImages" alt="bushes"/> :
+            null;
+            
+            currentCells[i][j] = <Cell row={i} column={j} content={content} />;
+          }
         }
+
+        let row = 0;
+        let column = 0;
+        // Con esto se incluyen las imagenes de los edificios
+        Object.keys(buildings).forEach(function(key) {
+          row = buildings[key][0];
+          column = buildings[key][1];
+          content = key.includes("Coliseo") ? 
+                    <div className={key} />:
+                    <img src={buildingsName[key]} className="mapImages" alt={"" + key}/>;
+          currentCells[row][column] = <Cell row={row} column={column} content={content} />;
+        });
+
+        setCellsContent([...currentCells]);
+        poblated = true;
       }
-
-      let row = 0;
-      let column = 0;
-      // Con esto se incluyen las imagenes de los edificios
-      Object.keys(buildings).forEach(function(key) {
-        row = buildings[key][0];
-        column = buildings[key][1];
-        content = key.includes("Coliseo") ? 
-                  <div className={key} />:
-                  <img src={buildingsName[key]} className="mapImages" alt={"" + key}/>;
-        currentCells[row][column] = <Cell row={row} column={column} content={content} />;
-      });
-
-      setCellsContent([...currentCells]);
-      poblated = true;
-    }
+    };
 
     // Esta función se utiliza para escuchar las teclas y actualizar la posicion y animacion
     const handleKeyDown = (e) => {
@@ -123,9 +149,11 @@ function Game() {
           isAnimating = false;
 
           if (e.key === ' '){
+            // Llamado al back para poner una bomba
+            positionX = players.xPosition;
+            positionY = players.yPosition;
             flagBomb = true;
-            bombPosX = positionX;
-            bombPosY = positionY;
+            client.send('/app/set-bomb-instance.1', {}, players.name);
           }
 
           // Esto se asegura que el ciclo del sprite sea correcto
@@ -133,21 +161,7 @@ function Game() {
 
           // Esto se hace para redibujar el sprite en cada celda a la que se mueve
           currentCells[positionX][positionY] = <Cell row={positionX} column={positionY} />;
-          prevAnimationX = positionX;
-          positionX =
-            e.key === 's'
-            ? (positionX + 1)
-            : e.key === 'w'
-            ? (positionX - 1)
-            : positionX;
-          prevAnimationY = positionY;
-          positionY =
-            e.key === 'd'
-            ? (positionY + 1)
-            : e.key === 'a'
-            ? (positionY - 1)
-            : positionY;
-          
+
           // Animacion del sprite
           animationY =
             e.key === 's'
@@ -160,13 +174,11 @@ function Game() {
           animationX = 90 + 45 * count + xSprite[0];
           player = <Sprite spriteX={animationX} spriteY={animationY} />;
 
-          // Esta condición previene que el jugador atraviese entidades del mapa
-          if (entitys[positionX][positionY] === 1){
-            positionX = prevAnimationX;
-            positionY = prevAnimationY;
-          }
+          var movement = new Movement(players, e.key);
 
-          currentCells[positionX][positionY] = <Cell row={positionX} column={positionY} content={player} />;
+          client.send('/app/set-player-instance.1', {}, JSON.stringify(movement));
+
+          currentCells[players.xPosition][players.yPosition] = <Cell row={players.xPosition} column={players.xPosition} content={player} />;
 
           if (flagBomb && (bombPosX !== positionX || bombPosY !== positionY)){
             currentCells[bombPosX][bombPosY] = <Cell row={bombPosX} column={bombPosY} content={<Bomb />} />;
@@ -182,6 +194,10 @@ function Game() {
       isAnimating = true;
     };
 
+    const timer = () => {
+      window.location.reload(true);
+    }
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
@@ -189,6 +205,10 @@ function Game() {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [count]);
+
+  if (cells.length === 0){
+    return(<div>Loading, if nothing happens please refresh your page</div>);
+  }
 
   return (
     <div className="map">
@@ -204,3 +224,5 @@ function Game() {
 }
 
 export default Game;
+
+// {idPlayer: 213123, action: right}
