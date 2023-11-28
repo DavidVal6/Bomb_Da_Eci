@@ -4,7 +4,7 @@ import GameBoard from './GameBoard';
 import { BrowserRouter as Router, Route, Routes, Navigate}
     from 'react-router-dom';
 import { MsalProvider, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import Login from './Login.js';
+import Login from './Login.js'
 
 function App ({ instance }) {
   return (

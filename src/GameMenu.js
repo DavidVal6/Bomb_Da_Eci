@@ -5,22 +5,18 @@ import PlayButton from './components/menu/playButton';
 import './styles/GameMenu.css';
 
 function GameMenu() {
-  
   return (
     <div className="GameMenu">
       <Navbar />
 
       <div className="bottomPanel">
-        
         <CharSelection />
-        
+
         <div className="rightPanel">
           <AchivementsBar />
           <PlayButton />
         </div>
-
       </div>
-
     </div>
   );
 }
