@@ -29,8 +29,8 @@ let ySprite = [0, 0, 180, 0];
 const Ducks = [5, 6];
 var player = <Sprite spriteX={xSprite[0]} spriteY={ySprite[0]} />;
 var flagBomb = false;
-var bombPosX = 0;
-var bombPosY = 0;
+var bombPosX = '0';
+var bombPosY = '0';
 var positionX = 1;
 var positionY = 1;
 const validKeys = ['a', 'w', 's', 'd', ' '];
@@ -62,41 +62,56 @@ var buildingsName = {"H":H,
                 "C":C};
 
 var entities = [];
+var gamer = [];
+var gamers = [];
+var userId = '';
 
 const socket = new SockJS('http://localhost:8080/stompendpoint');
 const client = Stomp.over(socket);
 
-class Movement {
-  constructor(player, key) {
+class Interaction {
+  constructor(key, player) {
       this.player = player;
       this.key = key;
   }
 }
 
-function Game() {
-  const [players, setPlayers] = useState([]);
+
+function Game({ userID }) {
+  userId = userID;
+  const [prevX, setPrevX] = useState(positionX);
+  const [prevY, setPrevY] = useState(positionY);
   const [count, setCount] = useState(-1);
   const [cells, setCellsContent] = useState([]);
 
   useEffect(() => {
     
     client.connect({}, () => {
-      // Obtiene la instancia de los jugadores
-      client.subscribe('/user/queue/get-board-instance', (response) => {
+      // Obtiene la instancia del  tablero
+      client.subscribe('/user/queue/get-board-instance.' + userId, (response) => {
         const board = JSON.parse(response.body);
         entities = board;
         renderTable();
       });
       // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-board-instance', {}, 'Loud And Clear');
+      client.send('/app/get-board-instance.' + userId, {}, 'Loud And Clear');
 
-      client.subscribe('/user/queue/get-player-instance', (response) => {
+      // Obtiene la instancia de los jugadores
+      client.subscribe('/user/queue/get-player-instance.' + userId, (response) => {
         //console.log("Entre");
-        const players = JSON.parse(response.body);
-        setPlayers(players);
+        const player = JSON.parse(response.body);
+        gamer = player;
       });
       // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-player-instance', {}, 'Loud And Clear');
+      client.send('/app/get-player-instance.' + userId, {}, 'Loud And Clear');
+
+      client.subscribe('/user/queue/get-players-instance.' + userId, (response) => {
+        //console.log("Entre");
+        const players = JSON.parse(response.body);
+        gamers = players;
+      });
+      // Activa un trigger en el back para que este retorne la instancia de los jugadores
+      client.send('/app/get-players-instance.' + userId, {}, 'Loud And Clear');
     });
 
     let animationX = 0;
@@ -113,6 +128,7 @@ function Game() {
             content = 
             i === 1 && j === 1 ? player :
             entities[i][j] === '2' ? <img src={Box} className="mapImages" alt="box"/> :
+            entities[i][j] === 'BOMB' ? <Cell row={bombPosX} column={bombPosY} content={<Bomb x={i} y={j} />} /> :
             Ducks.includes(j) && Ducks.includes(i) ? <div className={`duck-${j}-${i}`}/> :
             i === 11 ? <img src={Street} className="mapImages" alt="street"/> :
             j === 11 ? <img src={Tombstones} className="mapImages" alt="tombstones"/> :
@@ -141,62 +157,63 @@ function Game() {
     };
 
     // Esta función se utiliza para escuchar las teclas y actualizar la posicion y animacion
-    const handleKeyDown = (e) => {
+    const animate = (key) => {
       // Solo teclas validas son leidas
-      if (validKeys.includes(e.key)) {
+      if (validKeys.includes(key)) {
         // Con este if el jugador debe presionar de forma pausada las teclas para interacturar
         if (isAnimating){
           isAnimating = false;
 
-          if (e.key === ' '){
+          if (key === ' '){
             // Llamado al back para poner una bomba
-            positionX = players.xPosition;
-            positionY = players.yPosition;
+            bombPosX = gamer.xPosition;
+            bombPosY = gamer.yPosition;
             flagBomb = true;
-            client.send('/app/set-bomb-instance.1', {}, players.name);
           }
 
           // Esto se asegura que el ciclo del sprite sea correcto
           setCount((prevCount) => (prevCount < 0 ? prevCount + 1 : -2));
 
           // Esto se hace para redibujar el sprite en cada celda a la que se mueve
-          currentCells[positionX][positionY] = <Cell row={positionX} column={positionY} />;
+          currentCells[prevX][prevY] = <Cell row={prevX} column={prevY} />;
 
           // Animacion del sprite
           animationY =
-            e.key === 's'
+            key === 's'
               ? ySprite[0]
-              : e.key === 'a'
+              : key === 'a'
               ? 45 + ySprite[0]
-              : e.key === 'd'
+              : key === 'd'
               ? 90 + ySprite[0]
               : 135 + ySprite[0];
           animationX = 90 + 45 * count + xSprite[0];
           player = <Sprite spriteX={animationX} spriteY={animationY} />;
 
-          var movement = new Movement(players, e.key);
+          currentCells[gamer.xPosition][gamer.yPosition] = <Cell row={gamer.xPosition} column={gamer.xPosition} content={player} />;
 
-          client.send('/app/set-player-instance.1', {}, JSON.stringify(movement));
-
-          currentCells[players.xPosition][players.yPosition] = <Cell row={players.xPosition} column={players.xPosition} content={player} />;
-
-          if (flagBomb && (bombPosX !== positionX || bombPosY !== positionY)){
+          if (flagBomb && (bombPosX !== gamer.xPosition || bombPosY !== gamer.xPosition)){
             currentCells[bombPosX][bombPosY] = <Cell row={bombPosX} column={bombPosY} content={<Bomb />} />;
             flagBomb = false;
           }
 
           setCellsContent([...currentCells]); // Actualiza el estado de las celdas
+          setPrevX(gamer.xPosition);
+          setPrevY(gamer.yPosition);
         }
       }
+    };
+
+    const handleKeyDown = (e) => {
+      var ans = new Interaction(e.key, gamer.name);
+      client.send('/app/player-interaction.' + userId, {}, JSON.stringify(ans));
+      setTimeout(() => {
+        animate(e.key);
+      }, 50);
     };
 
     const handleKeyUp = () => {
       isAnimating = true;
     };
-
-    const timer = () => {
-      window.location.reload(true);
-    }
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -204,10 +221,15 @@ function Game() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [count]);
+  }, [count, prevX, prevY, userID]);
+
+  const refreshTimer = () => {
+    setTimeout(() => {}, 50);
+  };
 
   if (cells.length === 0){
-    return(<div>Loading, if nothing happens please refresh your page</div>);
+    refreshTimer();
+    //return(<div>Loading, if nothing happens please refresh your page</div>);
   }
 
   return (
