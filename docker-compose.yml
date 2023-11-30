@@ -1,0 +1,13 @@
+version: '3'
+services:
+  front:
+    image: frontbombdaeci:latest
+    ports:
+      - "3000:3000"
+    container_name: front
+  
+  backend:
+    image: backendbombdaeci:latest
+    ports:
+      - "8080:8080"
+    container_name: backend
