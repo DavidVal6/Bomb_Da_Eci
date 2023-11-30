@@ -112,6 +112,13 @@ function Game({ userID }) {
       });
       // Activa un trigger en el back para que este retorne la instancia de los jugadores
       client.send('/app/get-players-instance.' + userId, {}, 'Loud And Clear');
+
+      client.subscribe('/user/queue/get-board-instance-in-game.' + userId, (response) => {
+        const board = JSON.parse(response.body);
+        entities = board;
+        renderTable();
+      });
+      
     });
 
     let animationX = 0;
@@ -128,7 +135,6 @@ function Game({ userID }) {
             content = 
             i === 1 && j === 1 ? player :
             entities[i][j] === '2' ? <img src={Box} className="mapImages" alt="box"/> :
-            entities[i][j] === 'BOMB' ? <Cell row={bombPosX} column={bombPosY} content={<Bomb x={i} y={j} />} /> :
             Ducks.includes(j) && Ducks.includes(i) ? <div className={`duck-${j}-${i}`}/> :
             i === 11 ? <img src={Street} className="mapImages" alt="street"/> :
             j === 11 ? <img src={Tombstones} className="mapImages" alt="tombstones"/> :
@@ -206,6 +212,8 @@ function Game({ userID }) {
     const handleKeyDown = (e) => {
       var ans = new Interaction(e.key, gamer.name);
       client.send('/app/player-interaction.' + userId, {}, JSON.stringify(ans));
+      // 3 segundos
+      client.send('/app/get-board-instance-in-game.' + userId, {}, 'Test');
       setTimeout(() => {
         animate(e.key);
       }, 50);
