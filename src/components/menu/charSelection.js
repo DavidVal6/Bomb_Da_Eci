@@ -6,8 +6,13 @@ import swat from '../../assets/models/swat.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
+import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
 
-function CharSelection(){
+const socket = new SockJS('http://localhost:8080/stompendpoint');
+const client = Stomp.over(socket);
+
+function CharSelection({ userID }){
     const [index, setIndex] = useState(0);
     const characters = [
         red,
@@ -22,6 +27,10 @@ function CharSelection(){
         } else if (direction === 'right') {
             setIndex((prevIndex) => (prevIndex < characters.length - 1 ? prevIndex + 1 : 0));
         }
+        client.connect({}, () => {
+            // Activa un trigger en el back para que este guarde la instancia de jugador seleccionado
+            client.send('/app/set-chosen-character.' + userID, {}, JSON.stringify(index));
+        });
     };
 
     return (

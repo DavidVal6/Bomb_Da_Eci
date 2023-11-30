@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import '../../styles/Bomb.css';
+import Cell from './Cell';
 
 const sprite = [0, 45, 90, 135, 450];
 const orderList = [0, 1, 2, 1, 2, 3, 4];
 
-function Bomb() {
+function Bomb({ x, y}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [animating, setAnimating] = useState(true);
 
