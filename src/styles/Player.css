@@ -1,0 +1,8 @@
+.player{
+    background-color: rgb(251, 255, 8);
+    border: 1px solid rgb(165, 165, 165);
+    width: 500px;
+    height: 70px;
+    text-align: center;
+    font-size: 1.5rem;
+}
