@@ -64,7 +64,7 @@ var buildingsName = {"H":H,
 var entities = [];
 var gamer = [];
 var gamers = [];
-var userId = '';
+var chosenChar = 0;
 
 const socket = new SockJS('http://localhost:8080/stompendpoint');
 const client = Stomp.over(socket);
@@ -77,48 +77,60 @@ class Interaction {
 }
 
 
-function Game({ userID }) {
-  userId = userID;
+function Game() {
   const [prevX, setPrevX] = useState(positionX);
   const [prevY, setPrevY] = useState(positionY);
   const [count, setCount] = useState(-1);
   const [cells, setCellsContent] = useState([]);
 
   useEffect(() => {
+    let user = JSON.parse(sessionStorage.getItem('msal.token.keys.ae28ab40-d26b-42fe-845f-1aa60f9f0099'));
+    let idToken = JSON.parse(sessionStorage.getItem(user.idToken));
+    console.log(idToken.homeAccountId);
     
     client.connect({}, () => {
-      // Obtiene la instancia del  tablero
-      client.subscribe('/user/queue/get-board-instance.' + userId, (response) => {
+
+      // Obtiene la instancia del  tabler
+      client.subscribe('/user/queue/get-board-instance.' + idToken.homeAccountId, (response) => {
         const board = JSON.parse(response.body);
         entities = board;
         renderTable();
       });
       // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-board-instance.' + userId, {}, 'Loud And Clear');
+      client.send('/app/get-board-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
 
       // Obtiene la instancia de los jugadores
-      client.subscribe('/user/queue/get-player-instance.' + userId, (response) => {
+      client.subscribe('/user/queue/get-player-instance.' + idToken.homeAccountId, (response) => {
         //console.log("Entre");
         const player = JSON.parse(response.body);
         gamer = player;
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-player-instance.' + userId, {}, 'Loud And Clear');
+      
 
-      client.subscribe('/user/queue/get-players-instance.' + userId, (response) => {
+      client.subscribe('/user/queue/get-players-instance.' + idToken.homeAccountId, (response) => {
         //console.log("Entre");
         const players = JSON.parse(response.body);
         gamers = players;
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-players-instance.' + userId, {}, 'Loud And Clear');
+      
 
-      client.subscribe('/user/queue/get-board-instance-in-game.' + userId, (response) => {
+      client.subscribe('/user/queue/get-board-instance-in-game.' + idToken.homeAccountId, (response) => {
         const board = JSON.parse(response.body);
         entities = board;
         renderTable();
       });
+
+      client.subscribe('/user/queue/get-chosen-character.' + idToken.homeAccountId, (response) => {
+        chosenChar = parseInt(response.body, 10);
+      });
+
+      client.send('/app/get-chosen-character.' + idToken.homeAccountId, {}, 'Loud And Clear');
       
+      setTimeout(() => {
+        // Activa un trigger en el back para que este retorne la instancia de los jugadores
+        client.send('/app/get-player-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
+        client.send('/app/get-players-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
+      }, 500);
     });
 
     let animationX = 0;
@@ -179,24 +191,24 @@ function Game({ userID }) {
 
           // Esto se asegura que el ciclo del sprite sea correcto
           setCount((prevCount) => (prevCount < 0 ? prevCount + 1 : -2));
-
+          console.log("Aqui?");
           // Esto se hace para redibujar el sprite en cada celda a la que se mueve
           currentCells[prevX][prevY] = <Cell row={prevX} column={prevY} />;
 
           // Animacion del sprite
           animationY =
             key === 's'
-              ? ySprite[0]
+              ? ySprite[chosenChar]
               : key === 'a'
-              ? 45 + ySprite[0]
+              ? 45 + ySprite[chosenChar]
               : key === 'd'
-              ? 90 + ySprite[0]
-              : 135 + ySprite[0];
-          animationX = 90 + 45 * count + xSprite[0];
+              ? 90 + ySprite[chosenChar]
+              : 135 + ySprite[chosenChar];
+          animationX = 90 + 45 * count + xSprite[chosenChar];
           player = <Sprite spriteX={animationX} spriteY={animationY} />;
 
           currentCells[gamer.xPosition][gamer.yPosition] = <Cell row={gamer.xPosition} column={gamer.xPosition} content={player} />;
-
+          console.log(bombPosX !== gamer.xPosition || bombPosY !== gamer.xPosition);
           if (flagBomb && (bombPosX !== gamer.xPosition || bombPosY !== gamer.xPosition)){
             currentCells[bombPosX][bombPosY] = <Cell row={bombPosX} column={bombPosY} content={<Bomb />} />;
             flagBomb = false;
@@ -211,13 +223,16 @@ function Game({ userID }) {
 
     const handleKeyDown = (e) => {
       var ans = new Interaction(e.key, gamer.name);
-      client.send('/app/player-interaction.' + userId, {}, JSON.stringify(ans));
-      // 3 segundos
-      client.send('/app/get-board-instance-in-game.' + userId, {}, 'Test');
+      client.send('/app/player-interaction.' + idToken.homeAccountId, {}, JSON.stringify(ans));
       setTimeout(() => {
         animate(e.key);
       }, 50);
     };
+
+    // const fps = setInterval(() => {
+    //   client.send('/app/get-players-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
+    //   client.send('/app/get-board-instance-in-game.' + idToken.homeAccountId, {}, 'Test');
+    // }, 500);
 
     const handleKeyUp = () => {
       isAnimating = true;
@@ -228,27 +243,24 @@ function Game({ userID }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      //clearInterval(fps);
     };
-  }, [count, prevX, prevY, userID]);
+  }, [count, prevX, prevY]);
 
-  const refreshTimer = () => {
-    setTimeout(() => {}, 50);
-  };
-
-  if (cells.length === 0){
-    refreshTimer();
-    //return(<div>Loading, if nothing happens please refresh your page</div>);
-  }
 
   return (
     <div className="map">
-      {cells.map((row, rowIndex) => (
-        <div key={`row-${rowIndex}`} className="row">
-          {row.map((cell, colIndex) => (
-            <React.Fragment key={`cell-${rowIndex}-${colIndex}`}>{cell}</React.Fragment>
-          ))}
-        </div>
-      ))}
+      {cells.length !== 0 ? (
+        cells.map((row, rowIndex) => (
+          <div key={`row-${rowIndex}`} className="row">
+            {row.map((cell, colIndex) => (
+              <React.Fragment key={`cell-${rowIndex}-${colIndex}`}>{cell}</React.Fragment>
+            ))}
+          </div>
+        ))
+      ) : (
+        <div>Loading, if nothing happens please refresh your page</div>
+      )}
     </div>
   );
 }

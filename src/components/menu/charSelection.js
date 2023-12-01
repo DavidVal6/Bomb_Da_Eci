@@ -11,6 +11,7 @@ import SockJS from 'sockjs-client';
 
 const socket = new SockJS('http://localhost:8080/stompendpoint');
 const client = Stomp.over(socket);
+console.log();
 
 function CharSelection({ userID }){
     const [index, setIndex] = useState(0);
@@ -27,10 +28,9 @@ function CharSelection({ userID }){
         } else if (direction === 'right') {
             setIndex((prevIndex) => (prevIndex < characters.length - 1 ? prevIndex + 1 : 0));
         }
-        client.connect({}, () => {
-            // Activa un trigger en el back para que este guarde la instancia de jugador seleccionado
+        setTimeout(() => {
             client.send('/app/set-chosen-character.' + userID, {}, JSON.stringify(index));
-        });
+          }, 50);
     };
 
     return (
