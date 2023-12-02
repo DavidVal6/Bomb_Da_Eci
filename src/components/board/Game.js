@@ -67,7 +67,7 @@ var gamer = [];
 var gamers = [];
 var chosenChar = 0;
 
-const socket = new SockJS('http://localhost:8080/stompendpoint');
+const socket = new SockJS('https://bombdaeciback.azurewebsites.net/stompendpoint');
 const client = Stomp.over(socket);
 
 class Interaction {

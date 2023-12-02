@@ -12,7 +12,7 @@ function GameBoard({ userID }) {
   const [playerL, setPlayer] = useState([]);
   useEffect(() => {
 
-    const socket = new SockJS('http://localhost:8080/stompendpoint');
+    const socket = new SockJS('https://bombdaeciback.azurewebsites.net/stompendpoint');
     const client = Stomp.over(socket);
 
     client.connect({}, () => {
