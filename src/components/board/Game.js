@@ -223,7 +223,7 @@ function Game() {
     const handleKeyDown = (e) => {
       var key = e.key;
       var gameId = Cookie.get('gameId');
-      client.send('/app/player-interaction.' + Cookie.get('userId'), {}, { key, gameId });
+      client.send('/app/player-interaction.' + Cookie.get('userId'), {}, JSON.stringify({ key, gameId }));
       setTimeout(() => {
         animate(e.key);
       }, 50);
