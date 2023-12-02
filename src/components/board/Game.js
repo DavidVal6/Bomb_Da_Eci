@@ -146,6 +146,16 @@ function Game() {
             currentCells[i][j] = <Cell row={i} column={j} content={content} />;
           }
         }
+        gamers.forEach(player => {
+          const { xPosition, yPosition, character, isAlive } = player;
+      
+          // Asegúrate de que el jugador esté vivo antes de renderizarlo
+          if (isAlive) {
+            currentCells[xPosition][yPosition] = (
+              <Cell row={xPosition} column={yPosition} content={<Sprite spriteX={xSprite[character]} spriteY={ySprite[character]}/>}/>
+            );
+          }
+        });
 
         let row = 0;
         let column = 0;
@@ -218,6 +228,14 @@ function Game() {
         animate(e.key);
       }, 50);
     };
+
+    const intervalId = setInterval(() => {
+    client.send('/app/get-board-instance.' + Cookie.get('userId'), {},Cookie.get('gameId'));
+    }, 1000);
+    
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 1000);
 
     const handleKeyUp = () => {
       isAnimating = true;
