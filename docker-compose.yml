@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    image: davidval6/backend
+    environment:
+      - PORT=8080
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: davidval6/frontend
+    ports:
+      - "3000:3000"

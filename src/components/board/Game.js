@@ -20,6 +20,7 @@ import G from "../../assets/images/G.png";
 import H from "../../assets/images/H.png";
 import Stomp from 'stompjs';
 import SockJS from 'sockjs-client';
+import Cookie from 'js-cookie';
 
 var poblated = false;
 let isAnimating = true;
@@ -64,9 +65,9 @@ var buildingsName = {"H":H,
 var entities = [];
 var gamer = [];
 var gamers = [];
-var userId = '';
+var chosenChar = 0;
 
-const socket = new SockJS('http://localhost:8080/stompendpoint');
+const socket = new SockJS('https://bombdaeciback.azurewebsites.net/stompendpoint');
 const client = Stomp.over(socket);
 
 class Interaction {
@@ -77,46 +78,45 @@ class Interaction {
 }
 
 
-function Game({ userID }) {
-  userId = userID;
+function Game() {
   const [prevX, setPrevX] = useState(positionX);
   const [prevY, setPrevY] = useState(positionY);
   const [count, setCount] = useState(-1);
   const [cells, setCellsContent] = useState([]);
 
+  
   useEffect(() => {
+    // let user = JSON.parse(sessionStorage.getItem('msal.token.keys.ae28ab40-d26b-42fe-845f-1aa60f9f0099'));
+    // let idToken = JSON.parse(sessionStorage.getItem(user.idToken));
     
     client.connect({}, () => {
-      // Obtiene la instancia del  tablero
-      client.subscribe('/user/queue/get-board-instance.' + userId, (response) => {
+      // Activa un trigger en el back para que este retorne la instancia de los jugadores
+      client.send('/app/create-game.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
+
+      // Conexion pendiente cuando 4 jugadores se unan a una misma partida
+      client.subscribe('/user/queue/create-game', (response) => {
         const board = JSON.parse(response.body);
         entities = board;
         renderTable();
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-board-instance.' + userId, {}, 'Loud And Clear');
-
-      // Obtiene la instancia de los jugadores
-      client.subscribe('/user/queue/get-player-instance.' + userId, (response) => {
-        //console.log("Entre");
-        const player = JSON.parse(response.body);
-        gamer = player;
+      
+      // Conexión pendiente cuando el jugador interactue para recibir el tablero actual
+      client.subscribe('/user/queue/get-board-instance.' + Cookie.get('userId'), (response) => {
+        const board = JSON.parse(response.body);
+        entities = board;
+        renderTable();
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-player-instance.' + userId, {}, 'Loud And Clear');
 
-      client.subscribe('/user/queue/get-players-instance.' + userId, (response) => {
-        //console.log("Entre");
+      // Conexion para recibir jugadores cada vez que se necesite
+      client.subscribe('/user/queue/get-players.' + Cookie.get('userId'), (response) => {
         const players = JSON.parse(response.body);
         gamers = players;
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-players-instance.' + userId, {}, 'Loud And Clear');
-
-      client.subscribe('/user/queue/get-board-instance-in-game.' + userId, (response) => {
-        const board = JSON.parse(response.body);
-        entities = board;
-        renderTable();
+      
+      // Obtiene la instancia de los jugadores
+      client.subscribe('/user/queue/get-my-player.' + Cookie.get('userId'), (response) => {
+        const player = JSON.parse(response.body);
+        gamer = player;
       });
       
     });
@@ -127,6 +127,8 @@ function Game({ userID }) {
     const renderTable = () => {
       // Si el tablero ya esta poblado, no se vuelven a generar las celdas si no que se trabaja sobre las ya existentes
       if (!poblated){
+        client.send('/app/get-my-player.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
+        client.send('/app/get-players.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
         // Mapeo y asignacion de celdas
         let content = null;
         for (let i = 0; i < 12; i++) {
@@ -144,6 +146,16 @@ function Game({ userID }) {
             currentCells[i][j] = <Cell row={i} column={j} content={content} />;
           }
         }
+        gamers.forEach(player => {
+          const { xPosition, yPosition, character, isAlive } = player;
+      
+          // Asegúrate de que el jugador esté vivo antes de renderizarlo
+          if (isAlive) {
+            currentCells[xPosition][yPosition] = (
+              <Cell row={xPosition} column={yPosition} content={<Sprite spriteX={xSprite[character]} spriteY={ySprite[character]}/>}/>
+            );
+          }
+        });
 
         let row = 0;
         let column = 0;
@@ -179,24 +191,23 @@ function Game({ userID }) {
 
           // Esto se asegura que el ciclo del sprite sea correcto
           setCount((prevCount) => (prevCount < 0 ? prevCount + 1 : -2));
-
           // Esto se hace para redibujar el sprite en cada celda a la que se mueve
           currentCells[prevX][prevY] = <Cell row={prevX} column={prevY} />;
 
           // Animacion del sprite
           animationY =
             key === 's'
-              ? ySprite[0]
+              ? ySprite[chosenChar]
               : key === 'a'
-              ? 45 + ySprite[0]
+              ? 45 + ySprite[chosenChar]
               : key === 'd'
-              ? 90 + ySprite[0]
-              : 135 + ySprite[0];
-          animationX = 90 + 45 * count + xSprite[0];
+              ? 90 + ySprite[chosenChar]
+              : 135 + ySprite[chosenChar];
+          animationX = 90 + 45 * count + xSprite[chosenChar];
           player = <Sprite spriteX={animationX} spriteY={animationY} />;
 
           currentCells[gamer.xPosition][gamer.yPosition] = <Cell row={gamer.xPosition} column={gamer.xPosition} content={player} />;
-
+          console.log(bombPosX !== gamer.xPosition || bombPosY !== gamer.xPosition);
           if (flagBomb && (bombPosX !== gamer.xPosition || bombPosY !== gamer.xPosition)){
             currentCells[bombPosX][bombPosY] = <Cell row={bombPosX} column={bombPosY} content={<Bomb />} />;
             flagBomb = false;
@@ -210,14 +221,21 @@ function Game({ userID }) {
     };
 
     const handleKeyDown = (e) => {
-      var ans = new Interaction(e.key, gamer.name);
-      client.send('/app/player-interaction.' + userId, {}, JSON.stringify(ans));
-      // 3 segundos
-      client.send('/app/get-board-instance-in-game.' + userId, {}, 'Test');
+      var key = e.key;
+      var gameId = Cookie.get('gameId');
+      client.send('/app/player-interaction.' + Cookie.get('userId'), {}, JSON.stringify({ key, gameId }));
       setTimeout(() => {
         animate(e.key);
       }, 50);
     };
+
+    const intervalId = setInterval(() => {
+    client.send('/app/get-board-instance.' + Cookie.get('userId'), {},Cookie.get('gameId'));
+    }, 1000);
+    
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 1000);
 
     const handleKeyUp = () => {
       isAnimating = true;
@@ -229,26 +247,22 @@ function Game({ userID }) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [count, prevX, prevY, userID]);
+  }, [count, prevX, prevY]);
 
-  const refreshTimer = () => {
-    setTimeout(() => {}, 50);
-  };
-
-  if (cells.length === 0){
-    refreshTimer();
-    //return(<div>Loading, if nothing happens please refresh your page</div>);
-  }
 
   return (
     <div className="map">
-      {cells.map((row, rowIndex) => (
-        <div key={`row-${rowIndex}`} className="row">
-          {row.map((cell, colIndex) => (
-            <React.Fragment key={`cell-${rowIndex}-${colIndex}`}>{cell}</React.Fragment>
-          ))}
-        </div>
-      ))}
+      {cells.length !== 0 ? (
+        cells.map((row, rowIndex) => (
+          <div key={`row-${rowIndex}`} className="row">
+            {row.map((cell, colIndex) => (
+              <React.Fragment key={`cell-${rowIndex}-${colIndex}`}>{cell}</React.Fragment>
+            ))}
+          </div>
+        ))
+      ) : (
+        <div>Loading, if nothing happens please refresh your page</div>
+      )}
     </div>
   );
 }
