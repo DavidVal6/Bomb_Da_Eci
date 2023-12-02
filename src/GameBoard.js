@@ -6,9 +6,10 @@ import Game from './components/board/Game';
 import { useState, useEffect } from 'react';
 import Stomp from 'stompjs';
 import SockJS from 'sockjs-client';
+import Cookie from 'js-cookie';
 
 function GameBoard({ userID }) {
-  const [playersList, setPlayers] = useState([]);
+  const [playerL, setPlayer] = useState([]);
   useEffect(() => {
 
     const socket = new SockJS('http://localhost:8080/stompendpoint');
@@ -16,13 +17,13 @@ function GameBoard({ userID }) {
 
     client.connect({}, () => {
       // Obtiene la instancia de los jugadores
-      client.subscribe('/user/queue/get-player-instance.' + localStorage.getItem('token').token, (response) => {
+      client.subscribe('/user/queue/get-player-instance.' + Cookie.get('userId'), (response) => {
         //console.log("Entre");
-        const players = JSON.parse(response.body);
-        setPlayers(players);
+        const player = JSON.parse(response.body);
+        setPlayer(player);
       });
       // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-player-instance.' + localStorage.getItem('token').token, {}, 'Loud And Clear');
+      client.send('/app/get-player-instance.' + Cookie.get('userId'), {}, 'Loud And Clear');
     });
   }, []);
   
@@ -32,7 +33,7 @@ function GameBoard({ userID }) {
       <div className="board-down-pannel">
         <Game userID={userID}/>
         <div className="players-and-exit">
-            <Player identifier={playersList.name} />
+            <Player identifier={playerL.name} />
           <ExitButton />
         </div>
       </div>

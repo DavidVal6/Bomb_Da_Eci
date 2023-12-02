@@ -20,6 +20,7 @@ import G from "../../assets/images/G.png";
 import H from "../../assets/images/H.png";
 import Stomp from 'stompjs';
 import SockJS from 'sockjs-client';
+import Cookie from 'js-cookie';
 
 var poblated = false;
 let isAnimating = true;
@@ -83,54 +84,41 @@ function Game() {
   const [count, setCount] = useState(-1);
   const [cells, setCellsContent] = useState([]);
 
+  
   useEffect(() => {
-    let user = JSON.parse(sessionStorage.getItem('msal.token.keys.ae28ab40-d26b-42fe-845f-1aa60f9f0099'));
-    let idToken = JSON.parse(sessionStorage.getItem(user.idToken));
-    console.log(idToken.homeAccountId);
+    // let user = JSON.parse(sessionStorage.getItem('msal.token.keys.ae28ab40-d26b-42fe-845f-1aa60f9f0099'));
+    // let idToken = JSON.parse(sessionStorage.getItem(user.idToken));
     
     client.connect({}, () => {
+      // Activa un trigger en el back para que este retorne la instancia de los jugadores
+      client.send('/app/create-game.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
 
-      // Obtiene la instancia del  tabler
-      client.subscribe('/user/queue/get-board-instance.' + idToken.homeAccountId, (response) => {
+      // Conexion pendiente cuando 4 jugadores se unan a una misma partida
+      client.subscribe('/user/queue/create-game', (response) => {
         const board = JSON.parse(response.body);
         entities = board;
         renderTable();
       });
-      // Activa un trigger en el back para que este retorne la instancia de los jugadores
-      client.send('/app/get-board-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
-
-      // Obtiene la instancia de los jugadores
-      client.subscribe('/user/queue/get-player-instance.' + idToken.homeAccountId, (response) => {
-        //console.log("Entre");
-        const player = JSON.parse(response.body);
-        gamer = player;
-      });
       
+      // Conexión pendiente cuando el jugador interactue para recibir el tablero actual
+      client.subscribe('/user/queue/get-board-instance.' + Cookie.get('userId'), (response) => {
+        const board = JSON.parse(response.body);
+        entities = board;
+        renderTable();
+      });
 
-      client.subscribe('/user/queue/get-players-instance.' + idToken.homeAccountId, (response) => {
-        //console.log("Entre");
+      // Conexion para recibir jugadores cada vez que se necesite
+      client.subscribe('/user/queue/get-players.' + Cookie.get('userId'), (response) => {
         const players = JSON.parse(response.body);
         gamers = players;
       });
       
-
-      client.subscribe('/user/queue/get-board-instance-in-game.' + idToken.homeAccountId, (response) => {
-        const board = JSON.parse(response.body);
-        entities = board;
-        renderTable();
+      // Obtiene la instancia de los jugadores
+      client.subscribe('/user/queue/get-my-player.' + Cookie.get('userId'), (response) => {
+        const player = JSON.parse(response.body);
+        gamer = player;
       });
-
-      client.subscribe('/user/queue/get-chosen-character.' + idToken.homeAccountId, (response) => {
-        chosenChar = parseInt(response.body, 10);
-      });
-
-      client.send('/app/get-chosen-character.' + idToken.homeAccountId, {}, 'Loud And Clear');
       
-      setTimeout(() => {
-        // Activa un trigger en el back para que este retorne la instancia de los jugadores
-        client.send('/app/get-player-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
-        client.send('/app/get-players-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
-      }, 500);
     });
 
     let animationX = 0;
@@ -139,6 +127,8 @@ function Game() {
     const renderTable = () => {
       // Si el tablero ya esta poblado, no se vuelven a generar las celdas si no que se trabaja sobre las ya existentes
       if (!poblated){
+        client.send('/app/get-my-player.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
+        client.send('/app/get-players.' + Cookie.get('userId'), {}, Cookie.get('gameId'));
         // Mapeo y asignacion de celdas
         let content = null;
         for (let i = 0; i < 12; i++) {
@@ -191,7 +181,6 @@ function Game() {
 
           // Esto se asegura que el ciclo del sprite sea correcto
           setCount((prevCount) => (prevCount < 0 ? prevCount + 1 : -2));
-          console.log("Aqui?");
           // Esto se hace para redibujar el sprite en cada celda a la que se mueve
           currentCells[prevX][prevY] = <Cell row={prevX} column={prevY} />;
 
@@ -222,17 +211,13 @@ function Game() {
     };
 
     const handleKeyDown = (e) => {
-      var ans = new Interaction(e.key, gamer.name);
-      client.send('/app/player-interaction.' + idToken.homeAccountId, {}, JSON.stringify(ans));
+      var key = e.key;
+      var gameId = Cookie.get('gameId');
+      client.send('/app/player-interaction.' + Cookie.get('userId'), {}, { key, gameId });
       setTimeout(() => {
         animate(e.key);
       }, 50);
     };
-
-    // const fps = setInterval(() => {
-    //   client.send('/app/get-players-instance.' + idToken.homeAccountId, {}, 'Loud And Clear');
-    //   client.send('/app/get-board-instance-in-game.' + idToken.homeAccountId, {}, 'Test');
-    // }, 500);
 
     const handleKeyUp = () => {
       isAnimating = true;
@@ -243,7 +228,6 @@ function Game() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      //clearInterval(fps);
     };
   }, [count, prevX, prevY]);
 

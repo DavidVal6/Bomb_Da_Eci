@@ -6,12 +6,6 @@ import swat from '../../assets/models/swat.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
-import Stomp from 'stompjs';
-import SockJS from 'sockjs-client';
-
-const socket = new SockJS('http://localhost:8080/stompendpoint');
-const client = Stomp.over(socket);
-console.log();
 
 function CharSelection({ userID }){
     const [index, setIndex] = useState(0);
@@ -28,9 +22,6 @@ function CharSelection({ userID }){
         } else if (direction === 'right') {
             setIndex((prevIndex) => (prevIndex < characters.length - 1 ? prevIndex + 1 : 0));
         }
-        setTimeout(() => {
-            client.send('/app/set-chosen-character.' + userID, {}, JSON.stringify(index));
-          }, 50);
     };
 
     return (
