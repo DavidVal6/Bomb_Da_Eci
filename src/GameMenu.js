@@ -4,14 +4,14 @@ import Navbar from './components/menu/navigationBar';
 import PlayButton from './components/menu/playButton';
 import './styles/GameMenu.css';
 
-function GameMenu({ userID }) {
+function GameMenu() {
   
   return (
     <div className="GameMenu">
       <Navbar />
 
       <div className="bottomPanel">
-        <CharSelection userID={userID}/>
+        <CharSelection />
 
         <div className="rightPanel">
           <AchivementsBar />

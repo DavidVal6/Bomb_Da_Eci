@@ -1,13 +1,14 @@
-version: '3'
+version: '3.8'
+
 services:
-  front:
-    image: frontbombdaeci:latest
-    ports:
-      - "3000:3000"
-    container_name: front
-  
   backend:
-    image: backendbombdaeci:latest
+    image: davidval6/backend
+    environment:
+      - PORT=8080
     ports:
       - "8080:8080"
-    container_name: backend
+
+  frontend:
+    image: davidval6/frontend
+    ports:
+      - "3000:3000"
